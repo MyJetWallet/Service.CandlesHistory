@@ -69,7 +69,7 @@ namespace Service.CandlesHistory
                 });
             });
 
-            _serviceBusClient.Start();
+            //_serviceBusClient.Start();
         }
 
         public void ConfigureContainer(ContainerBuilder builder)
@@ -80,6 +80,8 @@ namespace Service.CandlesHistory
             builder.RegisterInstance(new PriceServiceBusSubscriber(_serviceBusClient, "Candles-History", Program.Settings.PricesTopicName))
                 .As<ISubscriber<PriceMessage>>()
                 .SingleInstance();
+
+            builder.RegisterInstance(_serviceBusClient).AsSelf().SingleInstance();
         }
     }
 }

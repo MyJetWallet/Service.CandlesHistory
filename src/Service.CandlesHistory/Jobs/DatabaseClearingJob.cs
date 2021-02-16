@@ -12,11 +12,6 @@ using Service.CandlesHistory.Services;
 
 namespace Service.CandlesHistory.Jobs
 {
-    public interface IDatabaseClearingJob
-    {
-        void RegisterBroker(string brokerId);
-    }
-
     public class DatabaseClearingJob: IDatabaseClearingJob, IStartable, IDisposable
     {
         private readonly ILogger<DatabaseClearingJob> _logger;
