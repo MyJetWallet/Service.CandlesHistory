@@ -22,15 +22,15 @@ namespace Service.CandlesHistory.Jobs
 
         public readonly object _gate = new object();
 
-        private Dictionary<CandleType, Dictionary<(string, string), CandleBidAskNoSql>> _toSave;
+        private Dictionary<CandleType, Dictionary<(string, string, DateTime), CandleBidAskNoSql>> _toSave;
 
-        private Dictionary<CandleType, Dictionary<(string, string), CandleBidAskNoSql>> _toSaveBrokerSymbolType
-            = new Dictionary<CandleType, Dictionary<(string, string), CandleBidAskNoSql>>()
+        private Dictionary<CandleType, Dictionary<(string, string, DateTime), CandleBidAskNoSql>> _toSaveBrokerSymbolType
+            = new Dictionary<CandleType, Dictionary<(string, string, DateTime), CandleBidAskNoSql>>()
             {
-                {CandleType.Minute, new Dictionary<(string, string), CandleBidAskNoSql>()},
-                {CandleType.Hour, new Dictionary<(string, string), CandleBidAskNoSql>()},
-                {CandleType.Day, new Dictionary<(string, string), CandleBidAskNoSql>()},
-                {CandleType.Month, new Dictionary<(string, string), CandleBidAskNoSql>()},
+                {CandleType.Minute, new Dictionary<(string, string, DateTime), CandleBidAskNoSql>()},
+                {CandleType.Hour, new Dictionary<(string, string, DateTime), CandleBidAskNoSql>()},
+                {CandleType.Day, new Dictionary<(string, string, DateTime), CandleBidAskNoSql>()},
+                {CandleType.Month, new Dictionary<(string, string, DateTime), CandleBidAskNoSql>()},
             };
 
         public CandleBidAskStoreJob(ILogger<CandleBidAskStoreJob> logger, ICandleBidAskNoSqlWriterManager bidAskWriterManager)
@@ -45,7 +45,7 @@ namespace Service.CandlesHistory.Jobs
                 throw new Exception("CandleBidAskStoreJob is stopped");
 
             lock (_gate)
-                _toSaveBrokerSymbolType[type][(brokerId, symbol)] = candle;
+                _toSaveBrokerSymbolType[type][(brokerId, symbol, candle.Candle.DateTime)] = candle;
         }
 
         public void Start()
@@ -95,12 +95,12 @@ namespace Service.CandlesHistory.Jobs
                 lock (_gate)
                 {
                     _toSave = _toSaveBrokerSymbolType;
-                    _toSaveBrokerSymbolType = new Dictionary<CandleType, Dictionary<(string, string), CandleBidAskNoSql>>()
+                    _toSaveBrokerSymbolType = new Dictionary<CandleType, Dictionary<(string, string, DateTime), CandleBidAskNoSql>>()
                     {
-                        {CandleType.Minute, new Dictionary<(string, string), CandleBidAskNoSql>()},
-                        {CandleType.Hour, new Dictionary<(string, string), CandleBidAskNoSql>()},
-                        {CandleType.Day, new Dictionary<(string, string), CandleBidAskNoSql>()},
-                        {CandleType.Month, new Dictionary<(string, string), CandleBidAskNoSql>()},
+                        {CandleType.Minute, new Dictionary<(string, string, DateTime), CandleBidAskNoSql>()},
+                        {CandleType.Hour, new Dictionary<(string, string, DateTime), CandleBidAskNoSql>()},
+                        {CandleType.Day, new Dictionary<(string, string, DateTime), CandleBidAskNoSql>()},
+                        {CandleType.Month, new Dictionary<(string, string, DateTime), CandleBidAskNoSql>()},
                     };
                 }
             }
