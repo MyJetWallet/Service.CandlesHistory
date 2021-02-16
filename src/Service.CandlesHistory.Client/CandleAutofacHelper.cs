@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using MyNoSqlServer.DataReader;
+// ReSharper disable UnusedMember.Global
 
 namespace Service.CandlesHistory.Client
 {

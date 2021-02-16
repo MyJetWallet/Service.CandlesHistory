@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Service.CandlesHistory.Client\Service.CandlesHistory.Client.csproj" />
+    <ProjectReference Include="..\..\src\Service.CandlesHistory.Domain.Models\Service.CandlesHistory.Domain.Models.csproj" />
   </ItemGroup>
 
 </Project>

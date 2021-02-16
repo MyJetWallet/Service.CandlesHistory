@@ -34,6 +34,7 @@ namespace Service.CandlesHistory.Jobs
 
         private async ValueTask HandlePrice(PriceMessage price)
         {
+            //if (price.Id == "ETHEUR")
             //Console.WriteLine($"{price.DateTime:yyyy-MM-dd HH:mm:ss} || {price.Id}[{price.LiquidityProvider}] {price.Bid}  {price.Ask}");
 
             //await Task.Delay(50000);
