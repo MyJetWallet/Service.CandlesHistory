@@ -28,7 +28,7 @@ namespace Service.CandlesHistory
         protected override void OnStopping()
         {
             _busTcpClient.Stop();
-            Thread.Sleep(3000);
+            Thread.Sleep(2000);
 
             _logger.LogInformation("OnStopping has been called.");
         }

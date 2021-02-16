@@ -4,11 +4,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
-using Grpc.Core.Logging;
 using Microsoft.Extensions.Logging;
-using Service.CandlesHistory.Domain.Models;
 using Service.CandlesHistory.NoSql;
-using Service.CandlesHistory.Services;
 
 namespace Service.CandlesHistory.Jobs
 {

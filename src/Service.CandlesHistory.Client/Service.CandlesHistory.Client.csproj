@@ -6,7 +6,6 @@
 
   <ItemGroup>
     <ProjectReference PrivateAssets="All" Include="..\Service.CandlesHistory.Domain.Models\Service.CandlesHistory.Domain.Models.csproj" />
-    <ProjectReference PrivateAssets="All" Include="..\Service.CandlesHistory.Grpc\Service.CandlesHistory.Grpc.csproj" />
   </ItemGroup>
 
   <ItemGroup>

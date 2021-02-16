@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Service.CandlesHistory.Client\Service.CandlesHistory.Client.csproj" />
-    <ProjectReference Include="..\..\src\Service.CandlesHistory.Grpc\Service.CandlesHistory.Grpc.csproj" />
   </ItemGroup>
 
 </Project>

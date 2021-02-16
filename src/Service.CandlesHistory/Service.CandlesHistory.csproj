@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Service.CandlesHistory.Grpc\Service.CandlesHistory.Grpc.csproj" />
+    <ProjectReference Include="..\Service.CandlesHistory.Domain.Models\Service.CandlesHistory.Domain.Models.csproj" />
   </ItemGroup>
 
   <ItemGroup>

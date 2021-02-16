@@ -3,7 +3,7 @@ using Service.CandlesHistory.NoSql;
 
 namespace Service.CandlesHistory.Jobs
 {
-    public interface ICandleBidAskStore
+    public interface ICandleBidAskStoreJob
     {
         void Save(CandleType type, string brokerId, string symbol, CandleBidAskNoSql candle);
     }

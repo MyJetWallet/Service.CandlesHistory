@@ -9,9 +9,9 @@ using Service.CandlesHistory.NoSql;
 
 namespace Service.CandlesHistory.Jobs
 {
-    public class CandleBidAskStore : ICandleBidAskStore, IStartable, IDisposable
+    public class CandleBidAskStoreJob : ICandleBidAskStoreJob, IStartable, IDisposable
     {
-        private readonly ILogger<CandleBidAskStore> _logger;
+        private readonly ILogger<CandleBidAskStoreJob> _logger;
         private readonly ICandleBidAskNoSqlWriterManager _bidAskWriterManager;
 
         private readonly Dictionary<string, List<CandleBidAskNoSql>> _dataToSave = new Dictionary<string, List<CandleBidAskNoSql>>();
@@ -33,7 +33,7 @@ namespace Service.CandlesHistory.Jobs
                 {CandleType.Month, new Dictionary<(string, string), CandleBidAskNoSql>()},
             };
 
-        public CandleBidAskStore(ILogger<CandleBidAskStore> logger, ICandleBidAskNoSqlWriterManager bidAskWriterManager)
+        public CandleBidAskStoreJob(ILogger<CandleBidAskStoreJob> logger, ICandleBidAskNoSqlWriterManager bidAskWriterManager)
         {
             _logger = logger;
             _bidAskWriterManager = bidAskWriterManager;
@@ -42,7 +42,7 @@ namespace Service.CandlesHistory.Jobs
         public void Save(CandleType type, string brokerId, string symbol, CandleBidAskNoSql candle)
         {
             if (_token.IsCancellationRequested)
-                throw new Exception("CandleBidAskStore is stopped");
+                throw new Exception("CandleBidAskStoreJob is stopped");
 
             lock (_gate)
                 _toSaveBrokerSymbolType[type][(brokerId, symbol)] = candle;
