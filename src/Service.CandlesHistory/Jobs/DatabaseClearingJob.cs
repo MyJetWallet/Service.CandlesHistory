@@ -22,9 +22,9 @@ namespace Service.CandlesHistory.Jobs
             _logger = logger;
         }
 
-        public void RegisterBroker(string brokerId)
+        public void RegisterInstrument(string brokerId, string symbol)
         {
-            _brokers[brokerId] = brokerId;
+            _brokers[brokerId] = symbol;
         }
 
         public void Start()
@@ -40,18 +40,24 @@ namespace Service.CandlesHistory.Jobs
                 {
                     try
                     {
-                        foreach (var brokerId in _brokers.Keys.ToList())
+                        foreach (var pair in _brokers.ToList())
                         {
+                            var brokerId = pair.Key;
+                            var symbol = pair.Value;
+
                             var writer = new MyNoSqlServer.DataWriter.MyNoSqlServerDataWriter<CandleBidAskNoSql>(
                                 Program.ReloadedSettings(model => model.MyNoSqlWriterUrl),
                                 CandleBidAskNoSql.TableNameMinute(brokerId), true);
 
-                            await writer.CleanAndKeepMaxRecords(CandleBidAskNoSql.GeneratePartitionKey(DateTime.UtcNow.AddDays(-Program.Settings.DaysToKeepMinutes).Date), 0);
-                            await writer.CleanAndKeepMaxRecords(CandleBidAskNoSql.GeneratePartitionKey(DateTime.UtcNow.AddDays(-Program.Settings.DaysToKeepMinutes-1).Date), 0);
-                            await writer.CleanAndKeepMaxRecords(CandleBidAskNoSql.GeneratePartitionKey(DateTime.UtcNow.AddDays(-Program.Settings.DaysToKeepMinutes-2).Date), 0);
-                            await writer.CleanAndKeepMaxRecords(CandleBidAskNoSql.GeneratePartitionKey(DateTime.UtcNow.AddDays(-Program.Settings.DaysToKeepMinutes-3).Date), 0);
+                            await writer.CleanAndKeepMaxRecords(CandleBidAskNoSql.GeneratePartitionKey(symbol, DateTime.UtcNow.AddDays(-Program.Settings.DaysToKeepMinutes - 1).Date), 0);
+                            await writer.CleanAndKeepMaxRecords(CandleBidAskNoSql.GeneratePartitionKey(symbol, DateTime.UtcNow.AddDays(-Program.Settings.DaysToKeepMinutes - 2).Date), 0);
+                            await writer.CleanAndKeepMaxRecords(CandleBidAskNoSql.GeneratePartitionKey(symbol, DateTime.UtcNow.AddDays(-Program.Settings.DaysToKeepMinutes - 3).Date), 0);
+                            await writer.CleanAndKeepMaxRecords(CandleBidAskNoSql.GeneratePartitionKey(symbol, DateTime.UtcNow.AddDays(-Program.Settings.DaysToKeepMinutes - 4).Date), 0);
+                            await writer.CleanAndKeepMaxRecords(CandleBidAskNoSql.GeneratePartitionKey(symbol, DateTime.UtcNow.AddDays(-Program.Settings.DaysToKeepMinutes - 5).Date), 0);
+                            await writer.CleanAndKeepMaxRecords(CandleBidAskNoSql.GeneratePartitionKey(symbol, DateTime.UtcNow.AddDays(-Program.Settings.DaysToKeepMinutes - 6).Date), 0);
+                            await writer.CleanAndKeepMaxRecords(CandleBidAskNoSql.GeneratePartitionKey(symbol, DateTime.UtcNow.AddDays(-Program.Settings.DaysToKeepMinutes - 7).Date), 0);
 
-                            _logger.LogInformation("Cleanup minutes for broker: {brokerId}", brokerId);
+                            _logger.LogInformation("Cleanup minutes for broker: {brokerId} and symbol: {symbol}", brokerId, symbol);
                         }
                     }
                     catch(Exception ex)

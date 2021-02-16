@@ -34,7 +34,7 @@ namespace Service.CandlesHistory.Jobs
 
         private async ValueTask HandlePrice(PriceMessage price)
         {
-            Console.WriteLine($"{price.DateTime:yyyy-MM-dd HH:mm:ss} || {price.Id}[{price.LiquidityProvider}] {price.Bid}  {price.Ask}");
+            //Console.WriteLine($"{price.DateTime:yyyy-MM-dd HH:mm:ss} || {price.Id}[{price.LiquidityProvider}] {price.Bid}  {price.Ask}");
 
             //await Task.Delay(50000);
             //throw new Exception("test error");
@@ -44,7 +44,7 @@ namespace Service.CandlesHistory.Jobs
 
             try
             {
-                _clearingJob.RegisterBroker(price.LiquidityProvider);
+                _clearingJob.RegisterInstrument(price.LiquidityProvider, price.Id);
 
                 await HandleCandleType(price, CandleType.Minute);
                 await HandleCandleType(price, CandleType.Hour);
@@ -59,7 +59,7 @@ namespace Service.CandlesHistory.Jobs
 
             sw.Stop();
 
-            Console.WriteLine($"handle time: {sw.Elapsed}");
+            //Console.WriteLine($"handle time: {sw.Elapsed}");
         }
 
         private async Task HandleCandleType(PriceMessage price, CandleType type)
@@ -95,7 +95,7 @@ namespace Service.CandlesHistory.Jobs
         private async Task<CandleBidAskNoSql> RestoreCurrent(string brokerId, string symbol, CandleType type, DateTime time)
         {
             var writer = _bidAskWriterManager.GetWriter(brokerId, type);
-            var entity = await writer.GetAsync(CandleBidAskNoSql.GeneratePartitionKey(time), CandleBidAskNoSql.GenerateRowKey(symbol, time));
+            var entity = await writer.GetAsync(CandleBidAskNoSql.GeneratePartitionKey(symbol, time), CandleBidAskNoSql.GenerateRowKey(time));
             return entity;
         }
     }

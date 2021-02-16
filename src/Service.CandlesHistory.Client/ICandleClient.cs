@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Resources;
 using MyNoSqlServer.Abstractions;
 using MyNoSqlServer.DataReader;
@@ -10,7 +11,9 @@ namespace Service.CandlesHistory.Client
 {
     public interface ICandleClient
     {
-        IEnumerable<CandleBidAsk> GetCandlesBidAskHistory(string brokerId, string symbol, DateTime from, DateTime to, CandleType type);
+        IEnumerable<CandleBidAsk> GetCandlesBidAskHistoryDesc(string brokerId, string symbol, DateTime from, DateTime to, CandleType type);
+
+        IEnumerable<CandleBidAsk> GetLastCandlesBidAskHistoryDesc(string brokerId, string symbol, int count, CandleType type);
     }
 
     public class CandleClient : ICandleClient
@@ -27,33 +30,63 @@ namespace Service.CandlesHistory.Client
             _myNoSqlSubscriber = myNoSqlSubscriber;
         }
 
-        public IEnumerable<CandleBidAsk> GetCandlesBidAskHistory(string brokerId, string symbol, DateTime from, DateTime to, CandleType type)
+        public IEnumerable<CandleBidAsk> GetCandlesBidAskHistoryDesc(string brokerId, string symbol, DateTime from, DateTime to, CandleType type)
         {
             var reader = GetReader(brokerId, type);
 
-            var fromDay = new DateTime(from.Year, from.Month, from.Day);
-            var toDay = new DateTime(to.Year, to.Month, to.Day);
+            var day = new DateTime(to.Year, to.Month, to.Day);
 
-            var day = fromDay;
-
-            while (day <= to)
+            var end = from.AddDays(-1);
+            while (day >= end)
             {
-                var data = reader.Get(CandleBidAskNoSql.GeneratePartitionKey(day), e =>
-                {
-                    return true;
-                    //e.Candle
-                });
+                var data = reader.Get(CandleBidAskNoSql.GeneratePartitionKey(symbol, day), 
+                    entity => entity.Candle.DateTime >= from && entity.Candle.DateTime <= to);
 
-                //todo: добавить филььтр по символу и откинуть время в сутрках
-
-                foreach (var item in data)
+                if (data != null)
                 {
-                    yield return item.Candle;
+                    foreach (var item in data.Select(e => e.Candle).OrderByDescending(e => e.DateTime))
+                    {
+                        yield return item;
+                    }
                 }
-                
-                day = day.AddDays(1);
+
+                day = day.AddDays(-1);
             }
         }
+
+        public IEnumerable<CandleBidAsk> GetLastCandlesBidAskHistoryDesc(string brokerId, string symbol, int count, CandleType type)
+        {
+            var now = DateTime.UtcNow;
+            var day = new DateTime(now.Year, now.Month, now.Day);
+
+            var to = now.AddYears(-10);
+
+            var index = 0;
+
+            var reader = GetReader(brokerId, type);
+
+            while (index < count && day > to)
+            {
+                var data = reader.Get(CandleBidAskNoSql.GeneratePartitionKey(symbol, day));
+
+                if (data != null)
+                {
+                    foreach (var item in data.Select(e => e.Candle).OrderByDescending(e => e.DateTime))
+                    {
+                        index++;
+                        yield return item;
+                        
+                        if (index >= count)
+                            break;
+                    }
+                }
+
+                day = day.AddDays(-1);
+            }
+        }
+
+
+
 
         private IMyNoSqlServerDataReader<CandleBidAskNoSql> GetReader(string brokerId, CandleType type)
         {

@@ -2,6 +2,6 @@
 {
     public interface IDatabaseClearingJob
     {
-        void RegisterBroker(string brokerId);
+        void RegisterInstrument(string brokerId, string symbol);
     }
 }
