@@ -1,8 +1,7 @@
 ﻿using System;
 using MyNoSqlServer.Abstractions;
-using Service.CandlesHistory.Domain.Models;
 
-namespace Service.CandlesHistory.NoSql
+namespace Service.CandlesHistory.Domain.Models.NoSql
 {
     public class CandleBidAskNoSql: MyNoSqlDbEntity
     {

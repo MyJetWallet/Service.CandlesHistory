@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
 using Microsoft.Extensions.Logging;
-using Service.CandlesHistory.NoSql;
+using Service.CandlesHistory.Domain.Models.NoSql;
 
 namespace Service.CandlesHistory.Jobs
 {

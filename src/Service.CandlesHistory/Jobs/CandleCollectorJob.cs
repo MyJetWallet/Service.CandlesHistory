@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using DotNetCoreDecorators;
 using Microsoft.Extensions.Logging;
 using Service.CandlesHistory.Domain.Models;
-using Service.CandlesHistory.NoSql;
+using Service.CandlesHistory.Domain.Models.NoSql;
 using Service.CandlesHistory.ServiceBus;
 using Service.CandlesHistory.Services;
 
