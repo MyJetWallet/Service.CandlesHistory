@@ -29,13 +29,13 @@ namespace TestApp
             PrintCount(client, "jetwallet", "BTCUSD", 100, CandleType.Hour);
             PrintCount(client, "jetwallet", "BTCUSD", 100, CandleType.Minute);
 
-            PrintRange(client, "jetwallet", "ETHEUR", DateTime.Parse("2021-02-16 02:00:00"), DateTime.Parse("2021-02-16 02:20:00"), CandleType.Minute);
-            PrintRange(client, "jetwallet", "ETHEUR", DateTime.Parse("2021-02-16 02:00:00"), DateTime.Parse("2021-02-16 02:20:00"), CandleType.Hour);
-            PrintRange(client, "jetwallet", "ETHEUR", DateTime.Parse("2021-02-16 02:10:00"), DateTime.Parse("2021-02-16 02:20:00"), CandleType.Hour);
-            PrintRange(client, "jetwallet", "ETHEUR", DateTime.Parse("2021-02-16 01:10:00"), DateTime.Parse("2021-02-16 06:20:00"), CandleType.Hour);
-            PrintRange(client, "jetwallet", "ETHEUR", DateTime.Parse("2021-02-16 01:10:00"), DateTime.Parse("2021-02-16 06:20:00"), CandleType.Month);
-            PrintRange(client, "jetwallet", "ETHEUR", DateTime.Parse("2021-01-01 01:10:00"), DateTime.Parse("2021-04-16 06:20:00"), CandleType.Month);
-            PrintRange(client, "jetwallet", "ETHEUR", DateTime.Parse("2021-01-01 01:10:00"), DateTime.Parse("2021-04-16 06:20:00"), CandleType.Day);
+            PrintRange(client, "jetwallet", "ETHEUR", DateTime.Parse("2021-02-17 02:00:00"), DateTime.Parse("2021-02-17 02:20:00"), CandleType.Minute);
+            PrintRange(client, "jetwallet", "ETHEUR", DateTime.Parse("2021-02-17 02:00:00"), DateTime.Parse("2021-02-17 02:20:00"), CandleType.Hour);
+            PrintRange(client, "jetwallet", "ETHEUR", DateTime.Parse("2021-02-17 02:10:00"), DateTime.Parse("2021-02-17 02:20:00"), CandleType.Hour);
+            PrintRange(client, "jetwallet", "ETHEUR", DateTime.Parse("2021-02-17 01:10:00"), DateTime.Parse("2021-02-17 06:20:00"), CandleType.Hour);
+            PrintRange(client, "jetwallet", "ETHEUR", DateTime.Parse("2021-02-17 01:10:00"), DateTime.Parse("2021-02-17 06:20:00"), CandleType.Month);
+            PrintRange(client, "jetwallet", "ETHEUR", DateTime.Parse("2021-01-01 01:10:00"), DateTime.Parse("2021-04-17 06:20:00"), CandleType.Month);
+            PrintRange(client, "jetwallet", "ETHEUR", DateTime.Parse("2021-01-01 01:10:00"), DateTime.Parse("2021-04-17 06:20:00"), CandleType.Day);
 
 
 
