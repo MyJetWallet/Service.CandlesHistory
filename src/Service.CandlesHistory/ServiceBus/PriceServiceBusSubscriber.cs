@@ -6,7 +6,7 @@ namespace Service.CandlesHistory.ServiceBus
     {
         public PriceServiceBusSubscriber(MyServiceBusTcpClient client, string queueName, string topicName) :
             base(client, topicName, queueName, false,
-                bytes => bytes.ByteArrayToServiceBusContract<PriceMessage>())
+                bytes => bytes.ByteArrayToServiceBusContract())
         {
 
         }

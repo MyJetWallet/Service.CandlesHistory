@@ -30,6 +30,7 @@ namespace Service.CandlesHistory.Jobs
             _storeJob = storeJob;
             _bidAskWriterManager = bidAskWriterManager;
             subscriber.Subscribe(HandlePrice);
+            
         }
 
         private async ValueTask HandlePrice(PriceMessage price)
