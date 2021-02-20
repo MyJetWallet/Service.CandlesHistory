@@ -15,7 +15,7 @@ namespace Service.CandlesHistory.Modules
             var serviceBusClient = new MyServiceBusTcpClient(Program.ReloadedSettings(model => model.ServiceBusHostPort), appName);
             builder.RegisterInstance(serviceBusClient).AsSelf().SingleInstance();
 
-            builder.RegisterInstance(new PriceServiceBusSubscriber(serviceBusClient, "Candles-History", Program.Settings.PricesTopicName))
+            builder.RegisterInstance(new PriceServiceBusSubscriber(serviceBusClient, "Candles-History-1", Program.Settings.PricesTopicName))
                 .As<ISubscriber<PriceMessage>>()
                 .SingleInstance();
 

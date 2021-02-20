@@ -22,11 +22,11 @@ namespace Service.CandlesHistory.ServiceBus
 
         private async ValueTask Reader(IReadOnlyList<IMyServiceBusMessage> messages)
         {
-            var size = 0;
-            size = messages.Sum(e => e.Data.Length);
-            Console.WriteLine($"Receive {messages.Count} messages. {(decimal)size/1024/1024} mb");
+            //var size = 0;
+            //size = messages.Sum(e => e.Data.Length);
+            //Console.WriteLine($"Receive {messages.Count} messages. {(decimal)size/1024/1024} mb");
 
-            Console.WriteLine($"no: {messages.First().Id} ({messages.First().AttemptNo})");
+            //Console.WriteLine($"no: {messages.First().Id} ({messages.First().AttemptNo})");
 
             //var sw = new Stopwatch();
             //sw.Start();
