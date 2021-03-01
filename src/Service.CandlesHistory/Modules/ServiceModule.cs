@@ -21,7 +21,12 @@ namespace Service.CandlesHistory.Modules
 
 
             builder
-                .RegisterType<CandleCollectorJob>()
+                .RegisterType<CandleBidAskCollectorJob>()
+                .AutoActivate()
+                .SingleInstance();
+
+            builder
+                .RegisterType<CandleTradeCollectorJob>()
                 .AutoActivate()
                 .SingleInstance();
 
@@ -38,11 +43,26 @@ namespace Service.CandlesHistory.Modules
                 .SingleInstance();
 
             builder
+                .RegisterType<CandleTradeNoSqlWriterManager>()
+                .As<ICandleTradeNoSqlWriterManager>()
+                .SingleInstance();
+
+            builder
                 .RegisterType<CandleBidAskStoreJob>()
                 .As<ICandleBidAskStoreJob>()
                 .As<IStartable>()
                 .AutoActivate()
                 .SingleInstance();
+
+            builder
+                .RegisterType<CandleTradeStoreJob>()
+                .As<ICandleTradeStoreJob>()
+                .As<IStartable>()
+                .AutoActivate()
+                .SingleInstance();
+
+
+            
         }
     }
 }

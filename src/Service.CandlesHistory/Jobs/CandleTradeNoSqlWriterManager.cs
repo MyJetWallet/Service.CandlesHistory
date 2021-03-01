@@ -6,30 +6,23 @@ using Service.CandlesHistory.Domain.Models.NoSql;
 
 namespace Service.CandlesHistory.Jobs
 {
-    public class CandleBidAskNoSqlWriterManager : ICandleBidAskNoSqlWriterManager
+    public class CandleTradeNoSqlWriterManager : ICandleTradeNoSqlWriterManager
     {
-        private readonly Dictionary<string, IMyNoSqlServerDataWriter<CandleBidAskNoSql>> _minuteWriterByBroker =
-            new Dictionary<string, IMyNoSqlServerDataWriter<CandleBidAskNoSql>>();
+        private readonly Dictionary<string, IMyNoSqlServerDataWriter<CandleTradeNoSql>> _minuteWriterByBroker = new Dictionary<string, IMyNoSqlServerDataWriter<CandleTradeNoSql>>();
+        private readonly Dictionary<string, IMyNoSqlServerDataWriter<CandleTradeNoSql>> _hourWriterByBroker = new Dictionary<string, IMyNoSqlServerDataWriter<CandleTradeNoSql>>();
+        private readonly Dictionary<string, IMyNoSqlServerDataWriter<CandleTradeNoSql>> _dayWriterByBroker = new Dictionary<string, IMyNoSqlServerDataWriter<CandleTradeNoSql>>();
+        private readonly Dictionary<string, IMyNoSqlServerDataWriter<CandleTradeNoSql>> _monthWriterByBroker = new Dictionary<string, IMyNoSqlServerDataWriter<CandleTradeNoSql>>();
 
-        private readonly Dictionary<string, IMyNoSqlServerDataWriter<CandleBidAskNoSql>> _hourWriterByBroker =
-            new Dictionary<string, IMyNoSqlServerDataWriter<CandleBidAskNoSql>>();
-
-        private readonly Dictionary<string, IMyNoSqlServerDataWriter<CandleBidAskNoSql>> _dayWriterByBroker =
-            new Dictionary<string, IMyNoSqlServerDataWriter<CandleBidAskNoSql>>();
-
-        private readonly Dictionary<string, IMyNoSqlServerDataWriter<CandleBidAskNoSql>> _monthWriterByBroker =
-            new Dictionary<string, IMyNoSqlServerDataWriter<CandleBidAskNoSql>>();
-
-        public IMyNoSqlServerDataWriter<CandleBidAskNoSql> GetWriter(string brokerId, CandleType type)
+        public IMyNoSqlServerDataWriter<CandleTradeNoSql> GetWriter(string brokerId, CandleType type)
         {
             if (type == CandleType.Minute)
             {
                 if (_minuteWriterByBroker.TryGetValue(brokerId, out var writer))
                     return writer;
 
-                writer = new MyNoSqlServer.DataWriter.MyNoSqlServerDataWriter<CandleBidAskNoSql>(
+                writer = new MyNoSqlServer.DataWriter.MyNoSqlServerDataWriter<CandleTradeNoSql>(
                     Program.ReloadedSettings(model => model.MyNoSqlWriterUrl),
-                    CandleBidAskNoSql.TableNameMinute(brokerId), true);
+                    CandleTradeNoSql.TableNameMinute(brokerId), true);
 
                 _minuteWriterByBroker[brokerId] = writer;
 
@@ -41,9 +34,9 @@ namespace Service.CandlesHistory.Jobs
                 if (_hourWriterByBroker.TryGetValue(brokerId, out var writer))
                     return writer;
 
-                writer = new MyNoSqlServer.DataWriter.MyNoSqlServerDataWriter<CandleBidAskNoSql>(
+                writer = new MyNoSqlServer.DataWriter.MyNoSqlServerDataWriter<CandleTradeNoSql>(
                     Program.ReloadedSettings(model => model.MyNoSqlWriterUrl),
-                    CandleBidAskNoSql.TableNameHour(brokerId), true);
+                    CandleTradeNoSql.TableNameHour(brokerId), true);
 
                 _hourWriterByBroker[brokerId] = writer;
 
@@ -55,9 +48,9 @@ namespace Service.CandlesHistory.Jobs
                 if (_dayWriterByBroker.TryGetValue(brokerId, out var writer))
                     return writer;
 
-                writer = new MyNoSqlServer.DataWriter.MyNoSqlServerDataWriter<CandleBidAskNoSql>(
+                writer = new MyNoSqlServer.DataWriter.MyNoSqlServerDataWriter<CandleTradeNoSql>(
                     Program.ReloadedSettings(model => model.MyNoSqlWriterUrl),
-                    CandleBidAskNoSql.TableNameDay(brokerId), true);
+                    CandleTradeNoSql.TableNameDay(brokerId), true);
 
                 _dayWriterByBroker[brokerId] = writer;
 
@@ -69,9 +62,9 @@ namespace Service.CandlesHistory.Jobs
                 if (_monthWriterByBroker.TryGetValue(brokerId, out var writer))
                     return writer;
 
-                writer = new MyNoSqlServer.DataWriter.MyNoSqlServerDataWriter<CandleBidAskNoSql>(
+                writer = new MyNoSqlServer.DataWriter.MyNoSqlServerDataWriter<CandleTradeNoSql>(
                     Program.ReloadedSettings(model => model.MyNoSqlWriterUrl),
-                    CandleBidAskNoSql.TableNameMonth(brokerId), true);
+                    CandleTradeNoSql.TableNameMonth(brokerId), true);
 
                 _monthWriterByBroker[brokerId] = writer;
 

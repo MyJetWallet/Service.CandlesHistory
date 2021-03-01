@@ -17,10 +17,15 @@ namespace Service.CandlesHistory.Client
 
         private readonly object _gate = new object();
 
-        private readonly Dictionary<string, IMyNoSqlServerDataReader<CandleBidAskNoSql>> _minuteReaderByBroker = new Dictionary<string, IMyNoSqlServerDataReader<CandleBidAskNoSql>>();
-        private readonly Dictionary<string, IMyNoSqlServerDataReader<CandleBidAskNoSql>> _hourReaderByBroker = new Dictionary<string, IMyNoSqlServerDataReader<CandleBidAskNoSql>>();
-        private readonly Dictionary<string, IMyNoSqlServerDataReader<CandleBidAskNoSql>> _dayReaderByBroker = new Dictionary<string, IMyNoSqlServerDataReader<CandleBidAskNoSql>>();
-        private readonly Dictionary<string, IMyNoSqlServerDataReader<CandleBidAskNoSql>> _monthReaderByBroker = new Dictionary<string, IMyNoSqlServerDataReader<CandleBidAskNoSql>>();
+        private readonly Dictionary<string, IMyNoSqlServerDataReader<CandleBidAskNoSql>> _minuteBidAskReaderByBroker = new Dictionary<string, IMyNoSqlServerDataReader<CandleBidAskNoSql>>();
+        private readonly Dictionary<string, IMyNoSqlServerDataReader<CandleBidAskNoSql>> _hourBidAskReaderByBroker = new Dictionary<string, IMyNoSqlServerDataReader<CandleBidAskNoSql>>();
+        private readonly Dictionary<string, IMyNoSqlServerDataReader<CandleBidAskNoSql>> _dayBidAskReaderByBroker = new Dictionary<string, IMyNoSqlServerDataReader<CandleBidAskNoSql>>();
+        private readonly Dictionary<string, IMyNoSqlServerDataReader<CandleBidAskNoSql>> _monthBidAskReaderByBroker = new Dictionary<string, IMyNoSqlServerDataReader<CandleBidAskNoSql>>();
+
+        private readonly Dictionary<string, IMyNoSqlServerDataReader<CandleTradeNoSql>> _minuteTradeReaderByBroker = new Dictionary<string, IMyNoSqlServerDataReader<CandleTradeNoSql>>();
+        private readonly Dictionary<string, IMyNoSqlServerDataReader<CandleTradeNoSql>> _hourTradeReaderByBroker = new Dictionary<string, IMyNoSqlServerDataReader<CandleTradeNoSql>>();
+        private readonly Dictionary<string, IMyNoSqlServerDataReader<CandleTradeNoSql>> _dayTradeReaderByBroker = new Dictionary<string, IMyNoSqlServerDataReader<CandleTradeNoSql>>();
+        private readonly Dictionary<string, IMyNoSqlServerDataReader<CandleTradeNoSql>> _monthTradeReaderByBroker = new Dictionary<string, IMyNoSqlServerDataReader<CandleTradeNoSql>>();
 
         public CandleClient(Func<string> getMyNoSqlHostPort, string appName)
         {
@@ -30,7 +35,7 @@ namespace Service.CandlesHistory.Client
 
         public IEnumerable<CandleBidAsk> GetCandlesBidAskHistoryDesc(string brokerId, string symbol, DateTime from, DateTime to, CandleType type)
         {
-            var reader = GetReader(brokerId, type);
+            var reader = GetReaderBidAsk(brokerId, type);
 
             var day = new DateTime(to.Year, to.Month, to.Day);
 
@@ -61,7 +66,7 @@ namespace Service.CandlesHistory.Client
 
             var index = 0;
 
-            var reader = GetReader(brokerId, type);
+            var reader = GetReaderBidAsk(brokerId, type);
 
             while (index < count && day > to)
             {
@@ -83,42 +88,138 @@ namespace Service.CandlesHistory.Client
             }
         }
 
-        private IMyNoSqlServerDataReader<CandleBidAskNoSql> GetReader(string brokerId, CandleType type)
+        public IEnumerable<CandleTrade> GetCandlesTradeHistoryDesc(string brokerId, string symbol, DateTime @from, DateTime to, CandleType type)
+        {
+            var reader = GetReaderTrade(brokerId, type);
+
+            var day = new DateTime(to.Year, to.Month, to.Day);
+
+            var end = from.AddDays(-1);
+            while (day >= end)
+            {
+                var data = reader.Get(CandleTradeNoSql.GeneratePartitionKey(symbol, day),
+                    entity => entity.Candle.DateTime >= from && entity.Candle.DateTime <= to);
+
+                if (data != null)
+                {
+                    foreach (var item in data.Select(e => e.Candle).OrderByDescending(e => e.DateTime))
+                    {
+                        yield return item;
+                    }
+                }
+
+                day = day.AddDays(-1);
+            }
+        }
+
+        public IEnumerable<CandleTrade> GetLastCandlesTradeHistoryDesc(string brokerId, string symbol, int count, CandleType type)
+        {
+            var now = DateTime.UtcNow;
+            var day = new DateTime(now.Year, now.Month, now.Day);
+
+            var to = now.AddYears(-10);
+
+            var index = 0;
+
+            var reader = GetReaderTrade(brokerId, type);
+
+            while (index < count && day > to)
+            {
+                var data = reader.Get(CandleTradeNoSql.GeneratePartitionKey(symbol, day));
+
+                if (data != null)
+                {
+                    foreach (var item in data.Select(e => e.Candle).OrderByDescending(e => e.DateTime))
+                    {
+                        index++;
+                        yield return item;
+
+                        if (index >= count)
+                            break;
+                    }
+                }
+
+                day = day.AddDays(-1);
+            }
+        }
+
+        private IMyNoSqlServerDataReader<CandleBidAskNoSql> GetReaderBidAsk(string brokerId, CandleType type)
         {
             if (type == CandleType.Minute)
             {
-                if (_minuteReaderByBroker.TryGetValue(brokerId, out var reader))
+                if (_minuteBidAskReaderByBroker.TryGetValue(brokerId, out var reader))
                     return reader;
 
                 RegisterNoSqlClient(brokerId);
-                return _minuteReaderByBroker[brokerId];
+                return _minuteBidAskReaderByBroker[brokerId];
             }
 
             if (type == CandleType.Hour)
             {
-                if (_hourReaderByBroker.TryGetValue(brokerId, out var reader))
+                if (_hourBidAskReaderByBroker.TryGetValue(brokerId, out var reader))
                     return reader;
 
                 RegisterNoSqlClient(brokerId);
-                return _hourReaderByBroker[brokerId];
+                return _hourBidAskReaderByBroker[brokerId];
             }
 
             if (type == CandleType.Day)
             {
-                if (_dayReaderByBroker.TryGetValue(brokerId, out var reader))
+                if (_dayBidAskReaderByBroker.TryGetValue(brokerId, out var reader))
                     return reader;
 
                 RegisterNoSqlClient(brokerId);
-                return _dayReaderByBroker[brokerId];
+                return _dayBidAskReaderByBroker[brokerId];
             }
 
             if (type == CandleType.Month)
             {
-                if (_monthReaderByBroker.TryGetValue(brokerId, out var reader))
+                if (_monthBidAskReaderByBroker.TryGetValue(brokerId, out var reader))
                     return reader;
                 
                 RegisterNoSqlClient(brokerId);
-                return _monthReaderByBroker[brokerId];
+                return _monthBidAskReaderByBroker[brokerId];
+            }
+
+            throw new Exception($"Unknown candle type {type}");
+        }
+
+        private IMyNoSqlServerDataReader<CandleTradeNoSql> GetReaderTrade(string brokerId, CandleType type)
+        {
+            if (type == CandleType.Minute)
+            {
+                if (_minuteTradeReaderByBroker.TryGetValue(brokerId, out var reader))
+                    return reader;
+
+                RegisterNoSqlClient(brokerId);
+                return _minuteTradeReaderByBroker[brokerId];
+            }
+
+            if (type == CandleType.Hour)
+            {
+                if (_hourTradeReaderByBroker.TryGetValue(brokerId, out var reader))
+                    return reader;
+
+                RegisterNoSqlClient(brokerId);
+                return _hourTradeReaderByBroker[brokerId];
+            }
+
+            if (type == CandleType.Day)
+            {
+                if (_dayTradeReaderByBroker.TryGetValue(brokerId, out var reader))
+                    return reader;
+
+                RegisterNoSqlClient(brokerId);
+                return _dayTradeReaderByBroker[brokerId];
+            }
+
+            if (type == CandleType.Month)
+            {
+                if (_monthTradeReaderByBroker.TryGetValue(brokerId, out var reader))
+                    return reader;
+
+                RegisterNoSqlClient(brokerId);
+                return _monthTradeReaderByBroker[brokerId];
             }
 
             throw new Exception($"Unknown candle type {type}");
@@ -134,11 +235,17 @@ namespace Service.CandlesHistory.Client
 
                 client = new MyNoSqlTcpClient(_getMyNoSqlHostPort, $"{_appName}-{brokerId}");
 
-                _minuteReaderByBroker[brokerId] = new MyNoSqlReadRepository<CandleBidAskNoSql>(client, CandleBidAskNoSql.TableNameMinute(brokerId));
-                _hourReaderByBroker[brokerId] = new MyNoSqlReadRepository<CandleBidAskNoSql>(client, CandleBidAskNoSql.TableNameHour(brokerId));
-                _dayReaderByBroker[brokerId] = new MyNoSqlReadRepository<CandleBidAskNoSql>(client, CandleBidAskNoSql.TableNameDay(brokerId));
-                _monthReaderByBroker[brokerId] = new MyNoSqlReadRepository<CandleBidAskNoSql>(client, CandleBidAskNoSql.TableNameMonth(brokerId));
 
+                _minuteBidAskReaderByBroker[brokerId] = new MyNoSqlReadRepository<CandleBidAskNoSql>(client, CandleBidAskNoSql.TableNameMinute(brokerId));
+                _hourBidAskReaderByBroker[brokerId] = new MyNoSqlReadRepository<CandleBidAskNoSql>(client, CandleBidAskNoSql.TableNameHour(brokerId));
+                _dayBidAskReaderByBroker[brokerId] = new MyNoSqlReadRepository<CandleBidAskNoSql>(client, CandleBidAskNoSql.TableNameDay(brokerId));
+                _monthBidAskReaderByBroker[brokerId] = new MyNoSqlReadRepository<CandleBidAskNoSql>(client, CandleBidAskNoSql.TableNameMonth(brokerId));
+
+                _minuteTradeReaderByBroker[brokerId] = new MyNoSqlReadRepository<CandleTradeNoSql>(client, CandleTradeNoSql.TableNameMinute(brokerId));
+                _hourTradeReaderByBroker[brokerId] = new MyNoSqlReadRepository<CandleTradeNoSql>(client, CandleTradeNoSql.TableNameHour(brokerId));
+                _dayTradeReaderByBroker[brokerId] = new MyNoSqlReadRepository<CandleTradeNoSql>(client, CandleTradeNoSql.TableNameDay(brokerId));
+                _monthTradeReaderByBroker[brokerId] = new MyNoSqlReadRepository<CandleTradeNoSql>(client, CandleTradeNoSql.TableNameMonth(brokerId));
+                
                 _myNoSqlSubscriberByBroker[brokerId] = client;
             }
 
@@ -149,10 +256,14 @@ namespace Service.CandlesHistory.Client
             var index = 0;
             while (index < 50)
             {
-                if (_minuteReaderByBroker[brokerId].Count() > 0
-                    && _hourReaderByBroker[brokerId].Count() > 0
-                    && _dayReaderByBroker[brokerId].Count() > 0
-                    && _monthReaderByBroker[brokerId].Count() > 0)
+                if (_minuteBidAskReaderByBroker[brokerId].Count() > 0
+                    && _hourBidAskReaderByBroker[brokerId].Count() > 0
+                    && _dayBidAskReaderByBroker[brokerId].Count() > 0
+                    && _monthBidAskReaderByBroker[brokerId].Count() > 0
+                    && _minuteTradeReaderByBroker[brokerId].Count() > 0
+                    && _hourTradeReaderByBroker[brokerId].Count() > 0
+                    && _dayTradeReaderByBroker[brokerId].Count() > 0
+                    && _monthTradeReaderByBroker[brokerId].Count() > 0)
                 {
                     break;
                 }

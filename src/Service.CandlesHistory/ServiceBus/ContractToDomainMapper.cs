@@ -42,8 +42,8 @@ namespace Service.CandlesHistory.ServiceBus
                             Bid = (double) res.Bid,
                             DateTime = res.DateTime,
                             LiquidityProvider = res.LiquidityProvider,
-                            TradePrice = (double) res.TradePrice,
-                            TradeVolume = (double) res.TradeVolume
+                            Price = (double) res.TradePrice,
+                            Volume = (double) res.TradeVolume
                         };
                     }
                 }

@@ -11,38 +11,39 @@ using Service.CandlesHistory.Services;
 
 namespace Service.CandlesHistory.Jobs
 {
-    public class CandleCollectorJob
+    public class CandleBidAskCollectorJob
     {
-        private readonly ILogger<CandleCollectorJob> _logger;
+        private readonly ILogger<CandleBidAskCollectorJob> _logger;
         private readonly IDatabaseClearingJob _clearingJob;
-        private readonly ICandleBidAskStoreJob _storeJob;
+        private readonly ICandleBidAskStoreJob _bitaskStoreJob;
+        private readonly ICandleTradeStoreJob _tradeStoreJob;
         private readonly ICandleBidAskNoSqlWriterManager _bidAskWriterManager;
+        private readonly ICandleTradeNoSqlWriterManager _tradeWriterManager;
 
         private readonly Dictionary<(string, string, CandleType), CandleBidAskNoSql> _currentBrokerSymbolType = new Dictionary<(string, string, CandleType), CandleBidAskNoSql>();
         
         private readonly CandleFrameSelector _frameSelector = new CandleFrameSelector();
 
-        public CandleCollectorJob(ISubscriber<PriceMessage> subscriber, ILogger<CandleCollectorJob> logger, IDatabaseClearingJob clearingJob,
-            ICandleBidAskStoreJob storeJob, ICandleBidAskNoSqlWriterManager bidAskWriterManager)
+        public CandleBidAskCollectorJob(ISubscriber<PriceMessage> subscriber, ILogger<CandleBidAskCollectorJob> logger, IDatabaseClearingJob clearingJob,
+            ICandleBidAskStoreJob bitaskStoreJob,
+            ICandleTradeStoreJob tradeStoreJob,
+            ICandleBidAskNoSqlWriterManager bidAskWriterManager,
+            ICandleTradeNoSqlWriterManager tradeWriterManager)
         {
             _logger = logger;
             _clearingJob = clearingJob;
-            _storeJob = storeJob;
+            _bitaskStoreJob = bitaskStoreJob;
+            _tradeStoreJob = tradeStoreJob;
             _bidAskWriterManager = bidAskWriterManager;
+            _tradeWriterManager = tradeWriterManager;
             subscriber.Subscribe(HandlePrice);
             
         }
 
         private async ValueTask HandlePrice(PriceMessage price)
         {
-            //if (price.Id == "ETHEUR")
-            //    Console.WriteLine($"{price.DateTime:yyyy-MM-dd HH:mm:ss} || {price.Id}[{price.LiquidityProvider}] {price.Bid}  {price.Ask}");
-
-            //await Task.Delay(50000);
-            //throw new Exception("test error");
-
-            var sw = new Stopwatch();
-            sw.Start();
+            if (price.Ask <= 0 && price.Bid <= 0)
+                return;
 
             try
             {
@@ -56,12 +57,8 @@ namespace Service.CandlesHistory.Jobs
             catch(Exception ex)
             {
                 if (ex.Message != "CandleBidAskStoreJob is stopped")
-                    _logger.LogError(ex, $"CandleCollectorJob cannot handle price {price.Id}[{price.Id}] {price.DateTime:O} {price.Bid}|{price.Ask}|{price.TradePrice}|{price.TradeVolume}");
+                    _logger.LogError(ex, $"CandleBidAskCollectorJob cannot handle price {price.Id}[{price.Id}] {price.DateTime:O} {price.Bid}|{price.Ask}|{price.Price}|{price.Volume}");
             }
-
-            sw.Stop();
-
-            //Console.WriteLine($"handle time: {sw.Elapsed}");
         }
 
         private async Task HandleCandleType(PriceMessage price, CandleType type)
@@ -77,7 +74,7 @@ namespace Service.CandlesHistory.Jobs
             }
             else if (candle.Candle.DateTime > time)
             {
-                _logger.LogError($"SKIP PRICE. Receive not actual price datetime. Current time range: {candle.Candle.DateTime:yyyy-MM-dd HH:mm:ss}, price time: {price.DateTime:O}. Price: {price.Id}[{price.LiquidityProvider}] {price.Bid}|{price.Ask}|{price.TradePrice}|{price.TradeVolume}");
+                _logger.LogError($"SKIP PRICE. Receive not actual price datetime. Current time range: {candle.Candle.DateTime:yyyy-MM-dd HH:mm:ss}, price time: {price.DateTime:O}. Price: {price.Id}[{price.LiquidityProvider}] {price.Bid}|{price.Ask}|{price.Price}|{price.Volume}");
                 return;
             }
 
@@ -86,7 +83,7 @@ namespace Service.CandlesHistory.Jobs
 
             _currentBrokerSymbolType[(price.LiquidityProvider, price.Id, type)] = candle;
 
-            _storeJob.Save(type, price.LiquidityProvider, price.Id, candle);
+            _bitaskStoreJob.Save(type, price.LiquidityProvider, price.Id, candle);
         }
 
         private CandleBidAskNoSql GetCurrent(string brokerId, string symbol, CandleType type)

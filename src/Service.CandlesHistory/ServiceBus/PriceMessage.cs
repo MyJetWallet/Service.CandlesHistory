@@ -9,7 +9,7 @@ namespace Service.CandlesHistory.ServiceBus
         public PriceMessage()
         {
             LiquidityProvider = "default";
-            Ask = Bid = TradePrice = TradeVolume = 0.0;
+            Ask = Bid = Price = Volume = 0.0;
         }
 
         [DataMember(Order = 1, IsRequired = true)]
@@ -28,9 +28,9 @@ namespace Service.CandlesHistory.ServiceBus
         public string LiquidityProvider { get; set; } 
 
         [DataMember(Order = 6, IsRequired = false)]
-        public double TradePrice { get; set; }
+        public double Price { get; set; }
 
         [DataMember(Order = 7, IsRequired = false)]
-        public double TradeVolume { get; set; }
+        public double Volume { get; set; }
     }
 }

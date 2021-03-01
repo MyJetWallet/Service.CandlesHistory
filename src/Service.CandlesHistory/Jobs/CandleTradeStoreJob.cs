@@ -9,12 +9,12 @@ using Service.CandlesHistory.Domain.Models.NoSql;
 
 namespace Service.CandlesHistory.Jobs
 {
-    public class CandleBidAskStoreJob : ICandleBidAskStoreJob, IStartable, IDisposable
+    public class CandleTradeStoreJob : ICandleTradeStoreJob, IStartable, IDisposable
     {
-        private readonly ILogger<CandleBidAskStoreJob> _logger;
-        private readonly ICandleBidAskNoSqlWriterManager _bidAskWriterManager;
+        private readonly ILogger<CandleTradeStoreJob> _logger;
+        private readonly ICandleTradeNoSqlWriterManager _bidAskWriterManager;
 
-        private readonly Dictionary<string, List<CandleBidAskNoSql>> _dataToSave = new Dictionary<string, List<CandleBidAskNoSql>>();
+        private readonly Dictionary<string, List<CandleTradeNoSql>> _dataToSave = new Dictionary<string, List<CandleTradeNoSql>>();
         private CandleType _candleToSave;
 
         private readonly CancellationTokenSource _token = new CancellationTokenSource();
@@ -22,27 +22,27 @@ namespace Service.CandlesHistory.Jobs
 
         public readonly object _gate = new object();
 
-        private Dictionary<CandleType, Dictionary<(string, string, DateTime), CandleBidAskNoSql>> _toSave;
+        private Dictionary<CandleType, Dictionary<(string, string, DateTime), CandleTradeNoSql>> _toSave;
 
-        private Dictionary<CandleType, Dictionary<(string, string, DateTime), CandleBidAskNoSql>> _toSaveBrokerSymbolType
-            = new Dictionary<CandleType, Dictionary<(string, string, DateTime), CandleBidAskNoSql>>()
+        private Dictionary<CandleType, Dictionary<(string, string, DateTime), CandleTradeNoSql>> _toSaveBrokerSymbolType
+            = new Dictionary<CandleType, Dictionary<(string, string, DateTime), CandleTradeNoSql>>()
             {
-                {CandleType.Minute, new Dictionary<(string, string, DateTime), CandleBidAskNoSql>()},
-                {CandleType.Hour, new Dictionary<(string, string, DateTime), CandleBidAskNoSql>()},
-                {CandleType.Day, new Dictionary<(string, string, DateTime), CandleBidAskNoSql>()},
-                {CandleType.Month, new Dictionary<(string, string, DateTime), CandleBidAskNoSql>()},
+                {CandleType.Minute, new Dictionary<(string, string, DateTime), CandleTradeNoSql>()},
+                {CandleType.Hour, new Dictionary<(string, string, DateTime), CandleTradeNoSql>()},
+                {CandleType.Day, new Dictionary<(string, string, DateTime), CandleTradeNoSql>()},
+                {CandleType.Month, new Dictionary<(string, string, DateTime), CandleTradeNoSql>()},
             };
 
-        public CandleBidAskStoreJob(ILogger<CandleBidAskStoreJob> logger, ICandleBidAskNoSqlWriterManager bidAskWriterManager)
+        public CandleTradeStoreJob(ILogger<CandleTradeStoreJob> logger, ICandleTradeNoSqlWriterManager bidAskWriterManager)
         {
             _logger = logger;
             _bidAskWriterManager = bidAskWriterManager;
         }
 
-        public void Save(CandleType type, string brokerId, string symbol, CandleBidAskNoSql candle)
+        public void Save(CandleType type, string brokerId, string symbol, CandleTradeNoSql candle)
         {
             if (_token.IsCancellationRequested)
-                throw new Exception("CandleBidAskStoreJob is stopped");
+                throw new Exception("CandleTradeStoreJob is stopped");
 
             lock (_gate)
                 _toSaveBrokerSymbolType[type][(brokerId, symbol, candle.Candle.DateTime)] = candle;
@@ -63,7 +63,7 @@ namespace Service.CandlesHistory.Jobs
             try
             {
                 SaveToNoSql().Wait();
-                _logger.LogInformation("CandleBidAskCollectorJob is stopped");
+                _logger.LogInformation("CandleTradeStoreJob is stopped");
             }
             catch (Exception ex)
             {
@@ -95,12 +95,12 @@ namespace Service.CandlesHistory.Jobs
                 lock (_gate)
                 {
                     _toSave = _toSaveBrokerSymbolType;
-                    _toSaveBrokerSymbolType = new Dictionary<CandleType, Dictionary<(string, string, DateTime), CandleBidAskNoSql>>()
+                    _toSaveBrokerSymbolType = new Dictionary<CandleType, Dictionary<(string, string, DateTime), CandleTradeNoSql>>()
                     {
-                        {CandleType.Minute, new Dictionary<(string, string, DateTime), CandleBidAskNoSql>()},
-                        {CandleType.Hour, new Dictionary<(string, string, DateTime), CandleBidAskNoSql>()},
-                        {CandleType.Day, new Dictionary<(string, string, DateTime), CandleBidAskNoSql>()},
-                        {CandleType.Month, new Dictionary<(string, string, DateTime), CandleBidAskNoSql>()},
+                        {CandleType.Minute, new Dictionary<(string, string, DateTime), CandleTradeNoSql>()},
+                        {CandleType.Hour, new Dictionary<(string, string, DateTime), CandleTradeNoSql>()},
+                        {CandleType.Day, new Dictionary<(string, string, DateTime), CandleTradeNoSql>()},
+                        {CandleType.Month, new Dictionary<(string, string, DateTime), CandleTradeNoSql>()},
                     };
                 }
             }
@@ -137,7 +137,7 @@ namespace Service.CandlesHistory.Jobs
 
                 if (!_dataToSave.TryGetValue(brokerId, out var list))
                 {
-                    list = new List<CandleBidAskNoSql>();
+                    list = new List<CandleTradeNoSql>();
                     _dataToSave[brokerId] = list;
                 }
 
